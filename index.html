@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitMatch Jordan</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f3f7f4;
+            color: #24352b;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 22px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        main {
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 18px;
+            box-shadow: 0 4px 18px #0000000d;
+        }
+
+        .card p {
+            line-height: 1.9;
+            color: #657168;
+        }
+
+        button {
+            background: #198754;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #12663e;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #chat {
+            display: none;
+            margin-top: 25px;
+            text-align: right;
+            border: 1px solid #dce5de;
+            border-radius: 14px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .chat-header {
+            background: #176b45;
+            color: white;
+            padding: 15px;
+            line-height: 1.8;
+        }
+
+        #messages {
+            padding: 15px;
+            height: 320px;
+            overflow-y: auto;
+        }
+
+        .message {
+            padding: 11px;
+            margin: 10px 0;
+            border-radius: 10px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .bot {
+            background: #e9f5ed;
+        }
+
+        .user {
+            background: #eaf0ff;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid #ccd5ce;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #758078;
+        }
+
+        @media (max-width: 480px) {
+            main {
+                margin: 20px auto;
+                padding: 12px;
+            }
+
+            .card {
+                padding: 22px 14px;
+            }
+
+            .chat-input {
+                gap: 6px;
+                padding: 8px;
+            }
+
+            .chat-input button {
+                padding: 10px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>FitMatch Jordan</h1>
+        <p>رحلتك نحو اختيار النادي المناسب تبدأ هنا</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>أهلًا فيك! 💚</h2>
+
+            <p>
+                محتار بأي جيم تشترك؟
+                عندك أسئلة عن الرياضة أو التغذية؟
+                مساعد FitMatch موجود ليساعدك.
+            </p>
+
+            <button type="button" onclick="openChat()">
+                اسأل المساعد الذكي 💬
+            </button>
+
+            <section id="chat">
+                <div class="chat-header">
+                    <strong>FitMatch Assistant</strong>
+                    <div>مساعدك في عالم الرياضة واللياقة</div>
+                </div>
+
+                <div id="messages" aria-live="polite">
+                    <div class="message bot">
+                        أهلًا وسهلًا! 👋
+                        أنا مساعد FitMatch.
+                        اسألني عن الرياضة أو التمارين أو التغذية العامة والصحة المرتبطة باللياقة.
+                    </div>
+                </div>
+
+                <form class="chat-input" onsubmit="sendMessage(event)">
+                    <input id="question" type="text" placeholder="اكتب سؤالك هون..." autocomplete="off" maxlength="2000"
+                        required>
+
+                    <button id="sendButton" type="submit">إرسال</button>
+                </form>
+            </section>
+        </section>
+    </main>
+
+    <footer>
+        FitMatch Jordan © 2026
+    </footer>
+
+    <script>
+        function openChat() {
+            document.getElementById("chat").style.display = "block";
+            document.getElementById("question").focus();
+        }
+
+        function addMessage(text, type) {
+            const messages = document.getElementById("messages");
+            const message = document.createElement("div");
+
+            message.className = "message " + type;
+            message.textContent = text;
+
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+
+            return message;
+        }
+
+        async function sendMessage(event) {
+            event.preventDefault();
+
+            const input = document.getElementById("question");
+            const sendButton = document.getElementById("sendButton");
+            const question = input.value.trim();
+
+            if (!question) {
+                return;
+            }
+
+            addMessage(question, "user");
+            input.value = "";
+            input.focus();
+
+            sendButton.disabled = true;
+            sendButton.textContent = "جاري الإرسال...";
+
+            const thinkingMessage = addMessage("جاري التفكير... 💚", "bot");
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: question
+                    })
+                });
+
+                const data = await response.json();
+
+                thinkingMessage.remove();
+
+                if (!response.ok) {
+                    addMessage(
+                        data.error || "تعذّر الحصول على الرد. حاولي مرة ثانية.",
+                        "bot"
+                    );
+                    return;
+                }
+
+                if (typeof data.reply !== "string" || !data.reply.trim()) {
+                    addMessage("وصل رد غير متوقع من السيرفر. حاولي مرة ثانية.", "bot");
+                    return;
+                }
+
+                addMessage(data.reply, "bot");
+
+            } catch (error) {
+                console.error("Chat error:", error);
+                thinkingMessage.remove();
+
+                addMessage(
+                    "تعذّر الاتصال بالسيرفر. تأكدي إنه شغّال وحاولي مرة ثانية.",
+                    "bot"
+                );
+            } finally {
+                sendButton.disabled = false;
+                sendButton.textContent = "إرسال";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
